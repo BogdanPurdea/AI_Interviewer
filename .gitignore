@@ -1,0 +1,17 @@
+# System
+.DS_Store
+.pkl
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.env
+
+# Project
+interviews/
+todo.txt
+
+# Documentation
+docs/

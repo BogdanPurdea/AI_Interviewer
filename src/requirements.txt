@@ -1,0 +1,5 @@
+langchain-ollama
+pydantic
+rich
+pyyaml
+python-dotenv
