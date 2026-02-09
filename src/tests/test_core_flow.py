@@ -5,24 +5,27 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.agents.safety import SafetyAgent
-from core.agents.planner import PlannerAgent
-from core.agents.interviewer import InterviewerAgent
-from core.agents.analyst import AnalystAgent
+from core.actions.planner import PlannerAction
+from core.actions.interviewer import InterviewerAction
+from core.actions.analyst import AnalystAction
+from core.schemas import InterviewState, InterviewPlan
+from langchain_core.messages import AIMessage, HumanMessage
+
 
 class TestCoreFlow:
     def __init__(self):
         print("\n=== Initializing Test Suite ===")
-        print("Instantiating Agents...")
+        print("Instantiating Actions...")
         self.safety_agent = SafetyAgent()
-        self.planner_agent = PlannerAgent()
-        self.interviewer_agent = InterviewerAgent()
-        self.analyst_agent = AnalystAgent()
-    
+        self.planner_action = PlannerAction()
+        self.interviewer_action = InterviewerAction()
+        self.analyst_action = AnalystAction()
+
     def test_safety(self):
         print("\n=== Testing Safety Check ===")
         safe_topic = "Artificial Intelligence in Software Development"
         unsafe_topic = "Artificial Intelligence for harrasment"
-        
+
         print(f"Checking Safe Topic: '{safe_topic}'")
         try:
             res = self.safety_agent.check_safety(safe_topic)
@@ -38,62 +41,92 @@ class TestCoreFlow:
             print(f"FAILED: {e}")
 
     def test_plan(self, topic="Remote Work Challenges"):
-        print("\n=== Testing Planner ===")
+        print("\n=== Testing PlannerAction ===")
+        # PlannerAction expects a state dict with "topic"
+        state = {"topic": topic}
         try:
-            plan = self.planner_agent.create_plan(topic)
-            print(f"SUCCESS: Plan generated with {len(plan.phases)} phases.")
-            print(f"Goal: {plan.interview_goal}")
-            for phase in plan.phases:
-                print(f"Phase: {phase}")
-            return plan
+            result = self.planner_action(state)
+            plan = result.get("interview_plan")
+
+            if plan:
+                print(f"SUCCESS: Plan generated with {len(plan.phases)} phases.")
+                print(f"Goal: {plan.interview_goal}")
+                for phase in plan.phases:
+                    print(f"Phase: {phase}")
+                return plan
+            else:
+                print("FAILED: Plan not found in result.")
+                return None
         except Exception as e:
             print(f"FAILED: {e}")
             return None
 
     def test_interviewer(self, plan):
-        if not plan: return
-        print("\n=== Testing Interviewer ===")
-        import uuid
-        session_id = str(uuid.uuid4())
-        topic = "Remote Work Challenges"
-        phase_objective = plan.phases[0]
-        
-        print(f"Topic: {topic}")
-        print(f"Phase 1 Objective: {phase_objective}")
+        if not plan:
+            return
+        print("\n=== Testing InterviewerAction ===")
 
-        # Simulating user input
-        user_input = "I am ready to begin."
-        
+        # Mock State
+        state = {
+            "interview_plan": plan,
+            "messages": [
+                AIMessage(content="Opening Message"),
+                HumanMessage(content="I am ready."),
+            ],
+            "question_count": 0,  # Ignored by action, calculated dynamically from messages
+            "interview_complete": False,
+        }
+
         try:
-            # Test new signature
-            response = self.interviewer_agent.get_next_response(
-                session_id=session_id,
-                user_input=user_input,
-                interview_goal=plan.interview_goal,
-                current_phase_index=1,
-                total_phases=len(plan.phases),
-                current_phase_objective=phase_objective
-            )
-            print(f"AI Response provided (Length: {len(response)} chars)")
-            print(f"Preview: {response[:50]}...")
+            # InterviewerAction returns a state update dict
+            result = self.interviewer_action(state)
+
+            messages = result.get("messages", [])
+            if messages:
+                response = messages[0].content
+                print(f"AI Response provided (Length: {len(response)} chars)")
+                print(f"Preview: {response[:100]}...")
+            else:
+                print("FAILED: No messages returned.")
+
+            if "interview_complete" in result:
+                print(f"Interview Complete Flag: {result['interview_complete']}")
+
         except Exception as e:
             print(f"FAILED: {e}")
 
     def test_analyst(self):
-        print("\n=== Testing Analyst ===")
+        print("\n=== Testing AnalystAction ===")
         topic = "Remote Work Challenges"
-        
-        dummy_transcript = """
-        AI: What are your main challenges?
-        User: I struggle with motivation and separating work from life.
-        AI: Can you elaborate?
-        User: I feel isolated and miss office banter.
-        """
-        
+
+        # AnalystAction computes transcript from messages if not provided
+        messages = [
+            AIMessage(content="What are your main challenges?"),
+            HumanMessage(
+                content="I struggle with motivation and separating work from life."
+            ),
+            AIMessage(content="Can you elaborate?"),
+            HumanMessage(content="I feel isolated and miss office banter."),
+        ]
+
+        state = {
+            "topic": topic,
+            "messages": messages,
+            "transcript": None,  # Should be generated
+        }
+
         try:
-            analysis = self.analyst_agent.analyze_transcript(dummy_transcript, topic)
-            print("SUCCESS: Analysis Generated.")
-            print(f"Summary: {analysis.summary}")
+            result = self.analyst_action(state)
+            analysis = result.get("insights")
+
+            if analysis:
+                print("SUCCESS: Analysis Generated.")
+                print(f"Summary: {analysis.summary}")
+                print(f"Sentiment: {analysis.sentiment_score}")
+                print(f"Themes: {analysis.key_themes}")
+            else:
+                print("FAILED: Analysis not found in result.")
+
         except Exception as e:
             print(f"FAILED: {e}")
 
@@ -102,6 +135,7 @@ class TestCoreFlow:
         plan = self.test_plan()
         self.test_interviewer(plan)
         self.test_analyst()
+
 
 if __name__ == "__main__":
     tester = TestCoreFlow()
