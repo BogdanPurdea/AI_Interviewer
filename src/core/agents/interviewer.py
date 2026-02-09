@@ -1,6 +1,8 @@
 from langchain_core.prompts import ChatPromptTemplate
 from core.config import PROMPTS
 from core.services.llm_factory import LLMFactory
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from core.services.history import HistoryService
 
 class InterviewerAgent:
     def __init__(self):
@@ -20,9 +22,7 @@ class InterviewerAgent:
         current_phase_objective: str
     ) -> str:
         """Stage 2: Conducts the interview dynamically based on the current phase."""
-        from langchain_core.runnables.history import RunnableWithMessageHistory
-        from core.services.history import get_session_history
-
+        
         # Construct the System Prompt
         system_prompt = PROMPTS["interviewer"]["system_prompt"].format(
             interview_goal=interview_goal,
@@ -41,7 +41,7 @@ class InterviewerAgent:
 
         chain_with_history = RunnableWithMessageHistory(
             chain,
-            get_session_history,
+            HistoryService.get_session_history,
             input_messages_key="input",
             history_messages_key="chat_history"
         )

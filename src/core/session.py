@@ -6,7 +6,7 @@ from core.agents.safety import SafetyAgent
 from core.agents.interviewer import InterviewerAgent
 from core.agents.analyst import AnalystAgent
 from core.services.storage import StorageService
-from core.services.history import get_session_history, clear_session_history
+from core.services.history import HistoryService
 
 class InterviewSession:
     def __init__(self):
@@ -23,7 +23,7 @@ class InterviewSession:
     def start(self, topic: str) -> str:
         """Initializes the session, generating a plan for the topic."""
         # Ensure fresh history
-        clear_session_history(self.session_id)
+        HistoryService.clear_session_history(self.session_id)
 
         # 1. Safety Check (Topic)
         if "SAFE" in self.safety_agent.check_safety(topic).upper():
@@ -45,7 +45,7 @@ class InterviewSession:
     def get_opening_message(self) -> str:
         msg = self.interviewer_agent.get_opening_message()
         # Add to LangChain history
-        get_session_history(self.session_id).add_ai_message(msg)
+        HistoryService.get_session_history(self.session_id).add_ai_message(msg)
         # Record in transcript
         self._record_turn("AI", msg)
         return msg
