@@ -13,7 +13,7 @@ system_prompt: |
       "Phase 4: [Objective]"
     ]
   }}
-  The plan should restrict the interview to at least 3 questions and at most 5 questions.
+  The plan should be built around at least 3 questions and at most 5 questions for the entire interview.
   The rubric must define sequential "Interview Phases" following a logical arc:
   1. Context/Background
   2. Specific Experiences/Details
