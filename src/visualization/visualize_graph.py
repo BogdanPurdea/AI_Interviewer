@@ -8,8 +8,7 @@ project_root = os.path.dirname(
 )  # Up from src/visualization to root
 sys.path.append(os.path.join(project_root, "src"))
 
-from core.graphs.workflow import app
-
+from core.graphs.workflow import InterviewWorkflow
 
 def visualize():
     # Save outputs in the same directory as the script
@@ -18,8 +17,7 @@ def visualize():
     mermaid_path = os.path.join(output_dir, "workflow_graph.mmd")
 
     print("Generating Mermaid Graph...")
-    graph = app.get_graph()
-
+    graph = InterviewWorkflow().app.get_graph()
     # Save Mermaid content
     mermaid_content = graph.draw_mermaid()
     with open(mermaid_path, "w") as f:
