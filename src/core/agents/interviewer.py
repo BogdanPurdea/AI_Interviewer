@@ -12,15 +12,18 @@ class InterviewerAgent:
 
     def get_next_response(
         self,
-        history: list, 
-        interview_goal: str, 
-        current_phase_index: int, 
-        total_phases: int, 
+        session_id: str,
+        user_input: str,
+        interview_goal: str,
+        current_phase_index: int,
+        total_phases: int,
         current_phase_objective: str
     ) -> str:
         """Stage 2: Conducts the interview dynamically based on the current phase."""
-        
-        # Construct the System Prompt using the new template
+        from langchain_core.runnables.history import RunnableWithMessageHistory
+        from core.services.history import get_session_history
+
+        # Construct the System Prompt
         system_prompt = PROMPTS["interviewer"]["system_prompt"].format(
             interview_goal=interview_goal,
             current_phase_index=current_phase_index,
@@ -28,6 +31,23 @@ class InterviewerAgent:
             current_phase_objective=current_phase_objective
         )
         
-        messages = [("system", system_prompt)] + history
-        response = self.llm.invoke(messages)
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_prompt),
+            ("placeholder", "{chat_history}"),
+            ("human", "{input}")
+        ])
+
+        chain = prompt | self.llm
+
+        chain_with_history = RunnableWithMessageHistory(
+            chain,
+            get_session_history,
+            input_messages_key="input",
+            history_messages_key="chat_history"
+        )
+
+        response = chain_with_history.invoke(
+            {"input": user_input},
+            config={"configurable": {"session_id": session_id}}
+        )
         return response.content

@@ -16,7 +16,8 @@ dependencies = [
     "pydantic",
     "rich",
     "pyyaml",
-    "python-dotenv"
+    "python-dotenv",
+    "langchain-community"
 ]
 
 [tool.setuptools.packages.find]

@@ -3,3 +3,4 @@ pydantic
 rich
 pyyaml
 python-dotenv
+langchain-community

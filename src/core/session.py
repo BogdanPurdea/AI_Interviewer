@@ -1,10 +1,12 @@
+import uuid
 from typing import Optional, List, Dict
-from core.schemas import InterviewPlan, InterviewState
+from core.schemas import InterviewState
 from core.agents.planner import PlannerAgent
 from core.agents.safety import SafetyAgent
 from core.agents.interviewer import InterviewerAgent
 from core.agents.analyst import AnalystAgent
 from core.services.storage import StorageService
+from core.services.history import get_session_history, clear_session_history
 
 class InterviewSession:
     def __init__(self):
@@ -15,11 +17,14 @@ class InterviewSession:
         self.analyst_agent = AnalystAgent()
         
         self.state: Optional[InterviewState] = None
-        self.history_langchain: List[tuple] = []
+        self.session_id = str(uuid.uuid4())
         self.is_active: bool = False
         
     def start(self, topic: str) -> str:
         """Initializes the session, generating a plan for the topic."""
+        # Ensure fresh history
+        clear_session_history(self.session_id)
+
         # 1. Safety Check (Topic)
         if "SAFE" in self.safety_agent.check_safety(topic).upper():
             pass
@@ -39,7 +44,10 @@ class InterviewSession:
 
     def get_opening_message(self) -> str:
         msg = self.interviewer_agent.get_opening_message()
-        self._record_turn("AI", msg, "assistant")
+        # Add to LangChain history
+        get_session_history(self.session_id).add_ai_message(msg)
+        # Record in transcript
+        self._record_turn("AI", msg)
         return msg
 
     def process_user_input(self, user_input: str) -> str:
@@ -53,8 +61,8 @@ class InterviewSession:
             self.end_session("Interview terminated due to safety violation.")
             raise ValueError("Safety violation: Response flagged as unsafe.")
 
-        # Record User Input
-        self._record_turn("User", user_input, "user")
+        # Record User Input in Transcript (History is handled by Agent)
+        self._record_turn("User", user_input)
 
         # Determine AI Response
         if self.state.current_question_index < len(self.state.plan.phases):
@@ -62,14 +70,15 @@ class InterviewSession:
             current_phase = self.state.current_question_index + 1
             
             response = self.interviewer_agent.get_next_response(
-                history=self.history_langchain,
+                session_id=self.session_id,
+                user_input=user_input,
                 interview_goal=self.state.plan.interview_goal,
                 current_phase_index=current_phase,
                 total_phases=len(self.state.plan.phases),
                 current_phase_objective=phase_objective
             )
             
-            self._record_turn(f"AI (Phase {current_phase})", response, "assistant")
+            self._record_turn(f"AI (Phase {current_phase})", response)
             
             # Advance phase
             self.state.current_question_index += 1
@@ -78,10 +87,9 @@ class InterviewSession:
             self.is_active = False
             return "Interview Complete."
 
-    def _record_turn(self, role_display: str, content: str, role_langchain: str):
+    def _record_turn(self, role_display: str, content: str):
         if self.state:
             self.state.transcript.append({"role": role_display, "content": content})
-        self.history_langchain.append((role_langchain, content))
 
     def end_session(self, summary_override: str = None) -> str:
         """Ends session, analyzes, and saves."""

@@ -53,19 +53,22 @@ class TestCoreFlow:
     def test_interviewer(self, plan):
         if not plan: return
         print("\n=== Testing Interviewer ===")
+        import uuid
+        session_id = str(uuid.uuid4())
         topic = "Remote Work Challenges"
         phase_objective = plan.phases[0]
         
         print(f"Topic: {topic}")
         print(f"Phase 1 Objective: {phase_objective}")
 
-        # Simulating that the user has accepted the opening handshake
-        history = [("user", "I am ready to begin.")]
+        # Simulating user input
+        user_input = "I am ready to begin."
         
         try:
             # Test new signature
             response = self.interviewer_agent.get_next_response(
-                history=history,
+                session_id=session_id,
+                user_input=user_input,
                 interview_goal=plan.interview_goal,
                 current_phase_index=1,
                 total_phases=len(plan.phases),
