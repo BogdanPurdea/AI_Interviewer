@@ -15,3 +15,4 @@ system_prompt: |
   }}
   The plan should restrict the interview to at least 3 questions and at most 5 questions.
   The list of objectives must define sequential "Interview Phases" following a logical arc.
+  More complex subjects should have more phases(objectives) and subsequent questions.

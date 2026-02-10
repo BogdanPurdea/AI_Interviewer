@@ -10,7 +10,12 @@ from core.services.history import HistoryService
 
 
 class InterviewSession:
-    def __init__(self, max_questions: int = 5):
+    def __init__(
+        self,
+        max_questions: int = 5,
+        question_relevance_threshold: int = 2,
+        phase_relevance_threshold: int = 3,
+    ):
         # Instantiate Actions
         self.planner = PlannerAction()
         self.safety = SafetyAction()
@@ -21,6 +26,8 @@ class InterviewSession:
         self.session_id = str(uuid.uuid4())
         self.is_active: bool = False
         self.max_questions = max_questions
+        self.question_relevance_threshold = question_relevance_threshold
+        self.phase_relevance_threshold = phase_relevance_threshold
 
     def start(self, topic: str) -> str:
         """Initializes the session, generating a plan for the topic."""
@@ -58,11 +65,10 @@ class InterviewSession:
         if not self.is_active:
             raise RuntimeError("Session is not active.")
 
-        print(self.state.current_phase_index)
         # 1. Safety Check (Input)
         if (
             user_input.strip()
-            and "UNSAFE" in self.safety.check_safety(user_input).upper()
+            and self.safety.check_safety(user_input).upper().strip() != "SAFE"
         ):
             self.is_active = False
             self.end_session("Interview terminated due to safety violation.")
@@ -96,11 +102,14 @@ class InterviewSession:
                 self.is_active = False
                 return self.interviewer.get_closing_message()
 
-            if assessment.relevant >= 2:
+            if assessment.relevant >= self.question_relevance_threshold:
                 self.state.questions_answered_count += 1
 
                 # Advance phase if possible
-                if self.state.current_phase_index < len(self.state.plan.phases):
+                if (
+                    self.state.current_phase_index < len(self.state.plan.phases)
+                    and assessment.relevant >= self.phase_relevance_threshold
+                ):
                     self.state.current_phase_index += 1
             else:
                 # If invalid, provide message and repeat question

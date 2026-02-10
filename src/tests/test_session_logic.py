@@ -64,7 +64,7 @@ class TestSessionLogic(unittest.TestCase):
 
         # Now test low relevance on second turn
         self.session.interviewer.assess_response = MagicMock(
-            return_value=MagicMock(relevant=2, cancel=False, reason="Irrelevant")
+            return_value=MagicMock(relevant=1, cancel=False, reason="Irrelevant")
         )
         initial_count = self.session.state.questions_answered_count
         response = self.session.process_user_input("invalid answer")
