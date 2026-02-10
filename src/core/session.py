@@ -12,6 +12,7 @@ from core.services.history import HistoryService
 class InterviewSession:
     def __init__(
         self,
+        session_id: str = None,
         max_questions: int = 5,
         question_relevance_threshold: int = 2,
         phase_relevance_threshold: int = 3,
@@ -23,7 +24,7 @@ class InterviewSession:
         self.analyst = AnalystAction()
 
         self.state: Optional[InterviewState] = None
-        self.session_id = str(uuid.uuid4())
+        self.session_id = session_id or str(uuid.uuid4())
         self.is_active: bool = False
         self.max_questions = max_questions
         self.question_relevance_threshold = question_relevance_threshold
