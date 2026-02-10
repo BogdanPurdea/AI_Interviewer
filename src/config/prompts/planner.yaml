@@ -7,15 +7,12 @@ system_prompt: |
   {{
     "interview_goal": "One sentence summary of what we want to learn.",
     "phases": [
-      "Phase 1: [Objective]",
-      "Phase 2: [Objective]",
-      "Phase 3: [Objective]",
-      "Phase 4: [Objective]"
+      "Objective 1",
+      "Objective 2",
+      "Objective 3",
+      "Objective 4"
     ]
   }}
   The plan should restrict the interview to at least 3 questions and at most 5 questions.
-  The rubric must define sequential "Interview Phases" following a logical arc:
-  1. Context/Background
-  2. Specific Experiences/Details
-  3. Challenges/Friction
-  4. Future/Improvements
+  The list of objectives must define sequential "Interview Phases" following a logical arc.
+  More complex subjects should have more phases(objectives) and subsequent questions.
