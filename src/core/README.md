@@ -4,18 +4,18 @@ This directory contains the foundational logic, configuration, and data structur
 
 ## 1. Components
 
-### Agents (`src/core/agents/`)
--   **`SafetyAgent`**: Uses a fast LLM to screen user topics for safe/unsafe classification using `prompts.yaml`.
--   **`PlannerAgent`**: Uses a reasoning LLM to generate a structured `InterviewPlan` (JSON) containing an interview goal and sequential phases.
--   **`InterviewerAgent`**: Manages the dynamic conversation loop. It processes history and current phase objectives to generate context-aware questions.
--   **`AnalystAgent`**: post-processes the transcript to generate an `InterviewAnalysis` (JSON) with themes and sentiment.
+### Actions (`src/core/actions/`)
+-   **`SafetyAction`**: Uses a fast LLM to screen user topics for safe/unsafe classification using `prompts.yaml`.
+-   **`PlannerAction`**: Uses a reasoning LLM to generate a structured `InterviewPlan` (JSON) containing an interview goal and sequential phases.
+-   **`InterviewerAction`**: Manages the dynamic conversation loop. It processes history and current phase objectives to generate context-aware questions.
+-   **`AnalystAction`**: post-processes the transcript to generate an `InterviewAnalysis` (JSON) with themes and sentiment.
 
 ### Services (`src/core/services/`)
 -   **`LLMFactory`**: Central factory for instantiating LLM clients (e.g., `ChatOllama`). Abstraction layer for model providers.
 -   **`StorageService`**: Handles saving interview transcripts and analysis results to the filesystem.
 
 ### Session Management (`src/core/session.py`)
--   **`InterviewSession`**: The central orchestrator. It maintains the `InterviewState`, instantiates agents, and manages the state transitions (Planning -> Interviewing -> Analysis).
+-   **`InterviewSession`**: The central orchestrator. It maintains the `InterviewState`, instantiates actions, and manages the state transitions (Planning -> Interviewing -> Analysis).
 
 ## 2. Configuration (`src/core/`)
 
