@@ -14,10 +14,10 @@ class TestCoreFlow:
     def __init__(self):
         print("\n=== Initializing Test Suite ===")
         print("Instantiating Actions...")
-        self.safety_action = SafetyAction()
-        self.planner_action = PlannerAction()
-        self.interviewer_action = InterviewerAction()
-        self.analyst_action = AnalystAction()
+        self.safety = SafetyAction()
+        self.planner = PlannerAction()
+        self.interviewer = InterviewerAction()
+        self.analyst = AnalystAction()
 
     def test_safety(self):
         print("\n=== Testing Safety Check ===")
@@ -26,14 +26,14 @@ class TestCoreFlow:
 
         print(f"Checking Safe Topic: '{safe_topic}'")
         try:
-            res = self.safety_action.check_safety(safe_topic)
+            res = self.safety.check_safety(safe_topic)
             print(f"Result: {res}")
         except Exception as e:
             print(f"FAILED: {e}")
 
         print(f"Checking Unsafe Topic: '{unsafe_topic}'")
         try:
-            res = self.safety_action.check_safety(unsafe_topic)
+            res = self.safety.check_safety(unsafe_topic)
             print(f"Result: {res}")
         except Exception as e:
             print(f"FAILED: {e}")
@@ -41,7 +41,7 @@ class TestCoreFlow:
     def test_plan(self, topic="Remote Work Challenges"):
         print("\n=== Testing Planner ===")
         try:
-            plan = self.planner_action.create_plan(topic)
+            plan = self.planner.create_plan(topic)
             print(f"SUCCESS: Plan generated with {len(plan.phases)} phases.")
             print(f"Goal: {plan.interview_goal}")
             for phase in plan.phases:
@@ -69,7 +69,7 @@ class TestCoreFlow:
 
         try:
             # Test new signature
-            response = self.interviewer_action.get_next_response(
+            response = self.interviewer.get_next_response(
                 session_id=session_id,
                 user_input=user_input,
                 interview_goal=plan.interview_goal,
@@ -94,7 +94,7 @@ class TestCoreFlow:
         """
 
         try:
-            analysis = self.analyst_action.analyze_transcript(dummy_transcript, topic)
+            analysis = self.analyst.analyze_transcript(dummy_transcript, topic)
             print("SUCCESS: Analysis Generated.")
             print(f"Summary: {analysis.summary}")
         except Exception as e:

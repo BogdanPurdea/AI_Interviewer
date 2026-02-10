@@ -8,7 +8,6 @@ class InterviewState(BaseModel):
 
     topic: str
     plan: InterviewPlan
-    transcript: List[Dict[str, str]] = (
-        []
-    )  # List of {"role": "user/assistant", "content": "str"}
-    current_question_index: int = 0
+    transcript: List[Dict[str, str]] = []
+    questions_answered_count: int = 0
+    current_phase_index: int = 0
