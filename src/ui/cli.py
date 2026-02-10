@@ -50,7 +50,7 @@ def main():
         if "interview_plan" in output and output["interview_plan"]:
             plan = output["interview_plan"]
             console.print(f"[dim]Plan: {plan.interview_goal}[/dim]")
-            # console.print(f"[dim]Phases: {', '.join(plan.phases)}[/dim]")
+            console.print(f"[dim]Phases: {', '.join(plan.phases)}[/dim]")
 
         # Display First Question
         if "messages" in output and output["messages"]:
@@ -89,12 +89,14 @@ def main():
             state["messages"].append(HumanMessage(content=user_input))
 
             with console.status("[dim]Thinking...[/dim]"):
-                output = app.invoke(state)
+                output = workflow.invoke(state)
 
             state = output
 
             # Display AI Response
-            if ("messages" in output and output["messages"]) or ("interview_complete" in state and state["interview_complete"]):
+            if ("messages" in output and output["messages"]) or (
+                "interview_complete" in state and state["interview_complete"]
+            ):
                 last_msg = output["messages"][-1]
                 if isinstance(last_msg, AIMessage):
                     console.print(f"\n[bold cyan]AI:[/bold cyan] {last_msg.content}")

@@ -5,16 +5,15 @@ config:
 ---
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	planner(planner)
-	interviewer(interviewer)
-	analyst(analyst)
+	check_complete(check_complete)
+	generate(generate)
+	finalize(finalize)
 	__end__([<p>__end__</p>]):::last
-	__start__ -.-> interviewer;
-	__start__ -.-> planner;
-	interviewer -.-> __end__;
-	interviewer -.-> analyst;
-	planner --> interviewer;
-	analyst --> __end__;
+	__start__ --> check_complete;
+	check_complete -.-> finalize;
+	check_complete -.-> generate;
+	generate --> check_complete;
+	finalize --> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
 	classDef last fill:#bfb6fc

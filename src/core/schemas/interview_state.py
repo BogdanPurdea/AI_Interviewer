@@ -24,8 +24,14 @@ class InterviewState(TypedDict):
     # The extracted insights from the Analyst (Output)
     insights: Optional[InterviewAnalysis]
 
-    # Optional: A structured transcript if different from `messages`
-    transcript: Optional[str]
-
     # Flag to indicate if the interview is complete (set by Interviewer Action)
     interview_complete: bool
+
+    # The number of questions asked (set by Interviewer Action)
+    question_count: int
+
+    # The current phase of the interview plan
+    current_phase: Optional[str]
+
+    # Optional: Reason for completion
+    reason: Optional[str]

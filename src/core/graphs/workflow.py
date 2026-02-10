@@ -5,6 +5,7 @@ from core.graphs.interviewer_graph import InterviewerGraph
 from core.actions.analyst import AnalystAction
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
+
 class InterviewWorkflow:
     def __init__(self):
         self.planner = PlannerAction()
@@ -46,9 +47,9 @@ class InterviewWorkflow:
     def _build_workflow(self):
         workflow = StateGraph(InterviewState)
 
-        workflow.add_node("planner", self.planner)
+        workflow.add_node("planner", self.planner.plan)
         workflow.add_node("interviewer", self._call_interviewer_subgraph)
-        workflow.add_node("analyst", self.analyst)
+        workflow.add_node("analyst", self.analyst.save_analysis)
 
         # Edges
         workflow.add_conditional_edges(
@@ -66,4 +67,3 @@ class InterviewWorkflow:
 
     def invoke(self, state: InterviewState):
         return self.app.invoke(state)
-

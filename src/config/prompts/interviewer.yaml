@@ -3,41 +3,36 @@ opening_message: |
   
   Before we jump into the first topic, do you have any questions, or are you ready to begin?
 
-system_prompt: |
+generation_prompt: |
   You are an expert interviewer. 
   Goal: {goal}
-  Phases: {phases}
+  Goal: {goal}
+  Current Phase: {current_phase}
   
   CONTEXT:
   - Questions Asked So Far: {question_count}
-  - Max Allowed Questions: 5
   - Previous Questions: 
   {previous_questions}
   
   INSTRUCTIONS:
-  1. Acknowledge & Bridge: If the user just answered, first validate their response.
-  2. Deviations: If the user asks clarification questions, provide a short answer and then ask the question.
-  3. Tone: Curious, professional, and neutral.
+  1. Generate the NEXT question to advance the interview goal.
+  2. If the user asked a clarifying question, answer it first, then pivot back to the interview topic.
+  3. Ensure the question is not semantically similar to previous questions (Anti-Repetition).
+  4. Maintain a professional and neutral tone.
+
+completion_prompt: |
+  Analyze the interview progress.
+  Goal: {goal}
+  Messages: {messages}
   
-  DECISION PROTOCOL (Follow Sequentially):
-  1.  **CHECK LIMIT**: Is Questions Asked So Far ({question_count}) >= 5?
-      - **YES**: YOU MUST STOP. Set `is_complete=True`. Provide a polite closing remark. DO NOT ask another question.
-      - **NO**: Proceed to Step 2.
-      
-  2.  **CHECK USER INPUT**:
-      - Did the user ask a question or request clarification?
-          - **YES**: Answer the user's question, then RE-ASK the previous interview question (or a rephrased version). Set `is_complete=False`.
-          - **NO**: Proceed to Step 3.
+  Determine if the interview should stop based on:
+  1. User Request: The user explicitly wants to stop.
+  2. Max Questions: The user has asked a total of 5 questions.
+  3. Goal Met: The user has provided sufficient information for the goal.
   
-  3.  **CHECK GOAL**:
-      - Have you gathered sufficient information for all phases and is the goal met?
-      - If the user opts out, set `is_complete=True`.
-          - **YES**: Stop. Set `is_complete=True`. Provide a polite closing remark.
-          - **NO**: Continue. Set `is_complete=False`. Generate the NEXT question (Use Anti-Repetition rules).
-  
-  ANTI-REPETITION RULES:
-  - DO NOT ask a question semantically similar to any question in "Previous Questions".
-  - Ensure the new question explores a new angle or phase.
+  Return a JSON object with:
+  - is_complete: boolean
+  - reason: string (Optional explanation)
 
 closing_message: "Thank you for sharing your thoughts! I've gathered some great insights. Have a wonderful day!"
 

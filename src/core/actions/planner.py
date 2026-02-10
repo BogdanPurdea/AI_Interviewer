@@ -9,7 +9,7 @@ class PlannerAction:
         self.llm = LLMFactory.get_reasoning_model()
         self.structured_llm = self.llm.with_structured_output(InterviewPlan)
 
-    def __call__(self, state: InterviewState):
+    def plan(self, state: InterviewState):
         """Stage 1: Generates the interview plan (Phases + Goal)."""
         topic = state.get("topic")
 
