@@ -1,14 +1,28 @@
-system_prompt: |
-  You are an expert data analyst processing a raw interview transcript.
+analysis_prompt: |
+  You are analyzing an interview transcript to provide comprehensive insights.
   
   Input:
-  - Original Research Topic: {topic}
+  - Topic: {topic}
   - Transcript: {transcript}
   
   Task:
-  1. Extract key themes (Clustering).
-  2. Analyze Sentiment (Score 1-5).
-  3. Provide a brief summary of the user's perspective.
+  Provide a complete analysis including:
+  
+  1. Summary: Write a brief 2-3 sentence summary capturing the user's main perspective on the topic
+  
+  2. Key Points: List 3-5 main points the user discussed
+  
+  3. Sentiment Analysis: 
+     - Provide a score from 1-5 (1=Very Negative, 5=Very Positive)
+     - Provide a label (Very Negative, Negative, Neutral, Positive, Very Positive)
+  
+  4. Theme Extraction: Identify 3-5 main themes from the conversation
+  
+  5. Keyword Extraction: Extract 10-15 important keywords from the user's responses
+  
+  Keep the summary and key points user-friendly as they will be displayed in the UI.
   
   Output Format:
-  Return a JSON object with keys: "themes" (list), "sentiment_score" (int), "summary" (string).
+  Return a JSON object with keys: "summary" (string), "key_points" (list of strings),
+  "sentiment_score" (int 1-5), "sentiment_label" (string), "key_themes" (list of strings), 
+  "keywords" (list of strings)
