@@ -7,13 +7,16 @@ from core.actions.interviewer import InterviewerAction
 from core.actions.analyst import AnalystAction
 from core.services.storage import StorageService
 from core.services.history import HistoryService
+from core.schemas.session_response import SessionResponse
+from config.settings import Settings
 
+settings = Settings()
 
 class InterviewSession:
     def __init__(
         self,
         session_id: str = None,
-        max_questions: int = 5,
+        max_questions: int = None,
         question_relevance_threshold: int = 2,
         phase_relevance_threshold: int = 3,
     ):
@@ -26,9 +29,9 @@ class InterviewSession:
         self.state: Optional[InterviewState] = None
         self.session_id = session_id or str(uuid.uuid4())
         self.is_active: bool = False
-        self.max_questions = max_questions
-        self.question_relevance_threshold = question_relevance_threshold
-        self.phase_relevance_threshold = phase_relevance_threshold
+        self.max_questions = max_questions or settings.max_questions
+        self.question_relevance_threshold = question_relevance_threshold or settings.question_relevance_threshold
+        self.phase_relevance_threshold = phase_relevance_threshold or settings.phase_relevance_threshold
 
     def start(self, topic: str) -> str:
         """Initializes the session, generating a plan for the topic."""
@@ -61,7 +64,7 @@ class InterviewSession:
         self._record_turn("AI", msg)
         return msg
 
-    def process_user_input(self, user_input: str) -> str:
+    def process_user_input(self, user_input: str) -> SessionResponse:
         """Processes user input, checks safety, and returns AI response."""
         if not self.is_active:
             raise RuntimeError("Session is not active.")
@@ -73,8 +76,11 @@ class InterviewSession:
         ):
             self.is_active = False
             self.end_session("Interview terminated due to safety violation.")
-            raise ValueError("Safety violation: Response flagged as unsafe.")
-
+            return SessionResponse(
+                success=False,
+                message="Interview ended",
+                error="Safety violation detected. Please keep responses appropriate."
+            )
         # Record User Input
         self._record_turn("User", user_input)
 
@@ -122,7 +128,14 @@ class InterviewSession:
                     response
                 )
 
-                return response
+                return SessionResponse(
+                    success=True,
+                    message=response,
+                    metadata={
+                        "questions_answered": self.state.questions_answered_count,
+                        "current_phase": self.state.current_phase_index,
+                    }
+                )
         elif last_ai_msg and self.state.questions_answered_count == 0:
             # First turn after opening - just increment to start the interview
             self.state.questions_answered_count += 1
@@ -151,7 +164,15 @@ class InterviewSession:
         )
 
         self._record_turn(f"AI", response)
-        return response
+        
+        return SessionResponse(
+            success=True,
+            message=response,
+            metadata={
+                "questions_answered": self.state.questions_answered_count,
+                "current_phase": self.state.current_phase_index,
+        }
+    )
 
     def _record_turn(self, role_display: str, content: str):
         if self.state:
@@ -180,3 +201,28 @@ class InterviewSession:
         return StorageService.save_interview(
             self.state.topic, self.state.transcript, analysis_data
         )
+
+    def to_dict(self) -> dict:
+        """Serialize session state for persistence"""
+        return {
+            "session_id": self.session_id,
+            "is_active": self.is_active,
+            "config": {
+                "max_questions": self.max_questions,
+                "question_relevance_threshold": self.question_relevance_threshold,
+                "phase_relevance_threshold": self.phase_relevance_threshold,
+            },
+            "state": self.state.model_dump() if self.state else None,
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> "InterviewSession":
+        """Restore session from serialized state"""
+        session = cls(
+            session_id=data["session_id"],
+            **data["config"]
+        )
+        session.is_active = data["is_active"]
+        if data["state"]:
+            session.state = InterviewState(**data["state"])
+        return session
