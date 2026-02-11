@@ -23,8 +23,13 @@ def load_prompts():
         prompts[stage] = load_yaml(f"src/config/prompts/{stage}.yaml")
     return prompts
 
+def load_responses():
+    """Load response templates from responses.yaml."""
+    return load_yaml("src/config/responses.yaml")
+
 # Load resources once at module level
 PROMPTS = load_prompts()
+RESPONSES = load_responses()
 MODELS_CONFIG = load_yaml("src/config/models.yaml")
 
 def get_models_config():

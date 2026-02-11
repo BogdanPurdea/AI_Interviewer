@@ -1,0 +1,24 @@
+# Response Templates
+# User-facing messages and response formats
+
+opening_message: |
+  Hi there! I'm your AI Interviewer. We'll have a conversation about {topic}.
+  
+  Are you ready to begin?
+
+closing_message: |
+  Thank you for sharing your thoughts! I've gathered some great insights. Have a wonderful day!
+
+analysis_complete: |
+  Interview Complete!
+
+  Summary:
+  {summary}
+
+  Key Points:
+  {key_points}
+
+  Sentiment: {sentiment_label} ({sentiment_score}/5)
+
+  ---
+  Saved to: `{filepath}`

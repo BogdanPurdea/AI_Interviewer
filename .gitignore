@@ -13,5 +13,8 @@ __pycache__/
 interviews/
 todo.txt
 
+# Gradio
+.gradio/
+
 # Documentation
 docs/

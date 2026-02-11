@@ -7,15 +7,19 @@ from core.actions.interviewer import InterviewerAction
 from core.actions.analyst import AnalystAction
 from core.services.storage import StorageService
 from core.services.history import HistoryService
+from core.schemas.session_response import SessionResponse
+from config.settings import Settings
+from datetime import datetime, timedelta
 
+settings = Settings()
 
 class InterviewSession:
     def __init__(
         self,
         session_id: str = None,
-        max_questions: int = 5,
-        question_relevance_threshold: int = 2,
-        phase_relevance_threshold: int = 3,
+        max_questions: int = None,
+        question_relevance_threshold: int = 4,
+        phase_relevance_threshold: int = 6,
     ):
         # Instantiate Actions
         self.planner = PlannerAction()
@@ -26,9 +30,11 @@ class InterviewSession:
         self.state: Optional[InterviewState] = None
         self.session_id = session_id or str(uuid.uuid4())
         self.is_active: bool = False
-        self.max_questions = max_questions
-        self.question_relevance_threshold = question_relevance_threshold
-        self.phase_relevance_threshold = phase_relevance_threshold
+        self.max_questions = max_questions or settings.max_questions
+        self.question_relevance_threshold = question_relevance_threshold or settings.question_relevance_threshold
+        self.phase_relevance_threshold = phase_relevance_threshold or settings.phase_relevance_threshold
+        self.created_at = datetime.now()
+        self.last_activity = datetime.now()
 
     def start(self, topic: str) -> str:
         """Initializes the session, generating a plan for the topic."""
@@ -61,20 +67,23 @@ class InterviewSession:
         self._record_turn("AI", msg)
         return msg
 
-    def process_user_input(self, user_input: str) -> str:
+    def process_user_input(self, user_input: str) -> SessionResponse:
         """Processes user input, checks safety, and returns AI response."""
         if not self.is_active:
             raise RuntimeError("Session is not active.")
-
+        self.last_activity = datetime.now()
         # 1. Safety Check (Input)
-        if (
-            user_input.strip()
-            and self.safety.check_safety(user_input).upper().strip() != "SAFE"
-        ):
-            self.is_active = False
-            self.end_session("Interview terminated due to safety violation.")
-            raise ValueError("Safety violation: Response flagged as unsafe.")
-
+        # if (
+        #     user_input.strip()
+        #     and self.safety.check_safety(user_input).upper().strip() != "SAFE"
+        # ):
+        #     self.is_active = False
+        #     self.end_session("Interview terminated due to safety violation.")
+        #     return SessionResponse(
+        #         success=False,
+        #         message="Interview ended",
+        #         error="Safety violation detected. Please keep responses appropriate."
+        #     )
         # Record User Input
         self._record_turn("User", user_input)
 
@@ -99,22 +108,41 @@ class InterviewSession:
             # Assess validity
             assessment = self.interviewer.assess_response(user_input, last_ai_msg)
 
+            # Priority 1: Check for cancellation
             if assessment.cancel:
                 self.is_active = False
-                return self.interviewer.get_closing_message()
+                closing_msg = self.interviewer.get_closing_message()
+                return SessionResponse(
+                    success=True,
+                    message=closing_msg,
+                    metadata={
+                        "questions_answered": self.state.questions_answered_count,
+                        "current_phase": self.state.current_phase_index,
+                    }
+                )
 
-            if assessment.relevant >= self.question_relevance_threshold:
+            # Priority 2: Check if user wants to skip
+            if assessment.skip_question:
+                # Increment question count and advance phase
+                self.state.questions_answered_count += 1
+                if self.state.current_phase_index < len(self.state.plan.phases):
+                    self.state.current_phase_index += 1
+                # Continue to generate next question (no early return)
+
+            # Priority 3: Check relevance for normal answers
+            elif assessment.relevant >= self.question_relevance_threshold:
                 self.state.questions_answered_count += 1
 
-                # Advance phase if possible
+                # Advance phase if response is highly relevant
                 if (
                     self.state.current_phase_index < len(self.state.plan.phases)
                     and assessment.relevant >= self.phase_relevance_threshold
                 ):
                     self.state.current_phase_index += 1
             else:
-                # If invalid, provide message and repeat question
-                response = f"The response does not answer the question. {assessment.reason}\n\nLet me ask again: {last_ai_msg}"
+                # If invalid and not skipping, provide feedback and repeat question
+                # Extract just the question from the last AI message (in case it had preamble)
+                response = f"I'd like to hear more about that. {assessment.reason}"
 
                 # Record turn and history
                 self._record_turn("AI", response)
@@ -122,7 +150,14 @@ class InterviewSession:
                     response
                 )
 
-                return response
+                return SessionResponse(
+                    success=True,
+                    message=response,
+                    metadata={
+                        "questions_answered": self.state.questions_answered_count,
+                        "current_phase": self.state.current_phase_index,
+                    }
+                )
         elif last_ai_msg and self.state.questions_answered_count == 0:
             # First turn after opening - just increment to start the interview
             self.state.questions_answered_count += 1
@@ -130,7 +165,15 @@ class InterviewSession:
         # 4. Check Termination
         if self.state.questions_answered_count >= self.max_questions:
             self.is_active = False
-            return self.interviewer.get_closing_message()
+            closing_msg = self.interviewer.get_closing_message()
+            return SessionResponse(
+                success=True,
+                message=closing_msg,
+                metadata={
+                    "questions_answered": self.state.questions_answered_count,
+                    "current_phase": self.state.current_phase_index,
+                }
+            )
 
         # 5. Generate Next Response
         # Stay on the last phase objective if we have exhausted the plan.
@@ -151,14 +194,25 @@ class InterviewSession:
         )
 
         self._record_turn(f"AI", response)
-        return response
+        
+        return SessionResponse(
+            success=True,
+            message=response,
+            metadata={
+                "questions_answered": self.state.questions_answered_count,
+                "current_phase": self.state.current_phase_index,
+        }
+    )
 
     def _record_turn(self, role_display: str, content: str):
         if self.state:
             self.state.transcript.append({"role": role_display, "content": content})
 
-    def end_session(self, summary_override: str = None) -> str:
-        """Ends session, analyzes, and saves."""
+    def end_session(self, summary_override: str = None) -> tuple[str, dict]:
+        """
+        Ends session, analyzes transcript, and saves.
+        Returns: (filepath, analysis_dict) for UI display
+        """
         self.is_active = False
 
         transcript_text = "\n".join(
@@ -168,8 +222,11 @@ class InterviewSession:
         if summary_override:
             analysis_data = {
                 "summary": summary_override,
-                "themes": [],
+                "key_points": [],
                 "sentiment_score": 0,
+                "sentiment_label": "N/A",
+                "key_themes": [],
+                "keywords": [],
             }
         else:
             analysis = self.analyst.analyze_transcript(
@@ -177,6 +234,37 @@ class InterviewSession:
             )
             analysis_data = analysis.model_dump()
 
-        return StorageService.save_interview(
+        filepath = StorageService.save_interview(
             self.state.topic, self.state.transcript, analysis_data
         )
+        
+        return filepath, analysis_data
+
+    def is_expired(self, timeout_minutes: int = 30) -> bool:
+        """Check if session has been inactive too long"""
+        return datetime.now() - self.last_activity > timedelta(minutes=timeout_minutes)
+
+    def to_dict(self) -> dict:
+        """Serialize session state for persistence"""
+        return {
+            "session_id": self.session_id,
+            "is_active": self.is_active,
+            "config": {
+                "max_questions": self.max_questions,
+                "question_relevance_threshold": self.question_relevance_threshold,
+                "phase_relevance_threshold": self.phase_relevance_threshold,
+            },
+            "state": self.state.model_dump() if self.state else None,
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> "InterviewSession":
+        """Restore session from serialized state"""
+        session = cls(
+            session_id=data["session_id"],
+            **data["config"]
+        )
+        session.is_active = data["is_active"]
+        if data["state"]:
+            session.state = InterviewState(**data["state"])
+        return session

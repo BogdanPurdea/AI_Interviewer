@@ -7,7 +7,7 @@ class LLMFactory:
         return ChatOllama(
             base_url=get_base_url(),
             model=REASONING_MODEL_ID,
-            temperature=0.2
+            temperature=0.3
         )
 
     @staticmethod

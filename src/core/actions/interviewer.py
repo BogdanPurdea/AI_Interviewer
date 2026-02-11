@@ -1,5 +1,5 @@
 from langchain_core.prompts import ChatPromptTemplate
-from core.config import PROMPTS
+from core.config import PROMPTS, RESPONSES
 from core.services.llm_factory import LLMFactory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from core.services.history import HistoryService
@@ -13,11 +13,11 @@ class InterviewerAction:
 
     def get_opening_message(self, topic) -> str:
         """Returns the static opening message."""
-        return PROMPTS["interviewer"]["opening_message"].format(topic=topic)
+        return RESPONSES["opening_message"].format(topic=topic)
 
     def get_closing_message(self) -> str:
         """Returns the static closing message."""
-        return PROMPTS["interviewer"]["closing_message"]
+        return RESPONSES["closing_message"]
 
     def assess_response(self, user_input: str, question: str) -> ResponseAssessment:
         """Determines if the user's input adequately answers the question."""
