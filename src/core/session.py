@@ -9,6 +9,7 @@ from core.services.storage import StorageService
 from core.services.history import HistoryService
 from core.schemas.session_response import SessionResponse
 from config.settings import Settings
+from datetime import datetime
 
 settings = Settings()
 
@@ -32,6 +33,8 @@ class InterviewSession:
         self.max_questions = max_questions or settings.max_questions
         self.question_relevance_threshold = question_relevance_threshold or settings.question_relevance_threshold
         self.phase_relevance_threshold = phase_relevance_threshold or settings.phase_relevance_threshold
+        self.created_at = datetime.now()
+        self.last_activity = datetime.now()
 
     def start(self, topic: str) -> str:
         """Initializes the session, generating a plan for the topic."""
@@ -68,7 +71,7 @@ class InterviewSession:
         """Processes user input, checks safety, and returns AI response."""
         if not self.is_active:
             raise RuntimeError("Session is not active.")
-
+        self.last_activity = datetime.now()
         # 1. Safety Check (Input)
         if (
             user_input.strip()
@@ -201,6 +204,10 @@ class InterviewSession:
         return StorageService.save_interview(
             self.state.topic, self.state.transcript, analysis_data
         )
+
+    def is_expired(self, timeout_minutes: int = 30) -> bool:
+        """Check if session has been inactive too long"""
+        return datetime.now() - self.last_activity > timedelta(minutes=timeout_minutes)
 
     def to_dict(self) -> dict:
         """Serialize session state for persistence"""
