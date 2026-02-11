@@ -72,7 +72,7 @@ class TestSessionLogic(unittest.TestCase):
         # Check input didn't increment
         self.assertEqual(self.session.state.questions_answered_count, initial_count)
         # Check response contains reason and repeats question
-        self.assertIn("Irrelevant", response)
+        self.assertIn("Irrelevant", response.message)  # Access .message from SessionResponse
 
     def test_cancel_via_assessment(self):
         # First, process an input to get past the handshake (count = 1)

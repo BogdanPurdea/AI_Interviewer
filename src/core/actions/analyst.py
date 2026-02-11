@@ -10,12 +10,15 @@ class AnalystAction:
         self.structured_llm = self.llm.with_structured_output(InterviewAnalysis)
 
     def analyze_transcript(self, transcript_text: str, topic: str) -> InterviewAnalysis:
-        """Stage 3: Extracts insights."""
-        analyst_prompt = (
-            PROMPTS["analyst"]["system_prompt"] + "\nReturn the output in JSON format."
+        """
+        Comprehensive analysis of interview transcript.
+        Returns summary, key points, sentiment, themes, and keywords.
+        """
+        analysis_prompt = (
+            PROMPTS["analyst"]["analysis_prompt"] + "\nReturn the output in JSON format."
         )
 
-        prompt = ChatPromptTemplate.from_template(analyst_prompt)
+        prompt = ChatPromptTemplate.from_template(analysis_prompt)
         chain = prompt | self.structured_llm
 
         return chain.invoke({"topic": topic, "transcript": transcript_text})
