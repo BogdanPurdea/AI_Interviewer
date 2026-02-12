@@ -49,7 +49,7 @@ class InterviewSession:
         # Ensure fresh history
         HistoryService.clear_session_history(self.session_id)
 
-        # Safety Check (Topic)
+        # Safety Check for topic
         if "SAFE" not in self.safety.check_safety(topic).upper():
             raise ValueError(f"Safety violation: Topic '{topic}' is unsafe.")
 
@@ -124,6 +124,7 @@ class InterviewSession:
     def _check_termination(self) -> Optional[SessionResponse]:
         """Check if interview should end due to question limit."""
         if self.state.questions_answered_count >= self.max_questions:
+            print(self.state.questions_answered_count)
             closing_msg = self.interviewer.get_closing_message()
             return self._build_response(closing_msg)
         return None
