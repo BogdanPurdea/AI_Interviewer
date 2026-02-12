@@ -1,15 +1,16 @@
 import os
 import yaml
 from dotenv import load_dotenv
+from config.settings import Settings
 
 load_dotenv()
+settings = Settings()
 
 def load_yaml(filepath):
     """Loads a YAML file given a relative path from the project root."""
-    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # Project Root
+    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     path = os.path.join(base_path, filepath)
     if not os.path.exists(path):
-        # Fallback for old core-relative paths if needed, or error logging
         print(f"Warning: Config file not found at {path}")
         return {}
     with open(path, "r") as f:
@@ -30,23 +31,15 @@ def load_responses():
 # Load resources once at module level
 PROMPTS = load_prompts()
 RESPONSES = load_responses()
-MODELS_CONFIG = load_yaml("src/config/models.yaml")
 
-def get_models_config():
-    global MODELS_CONFIG
-    if not MODELS_CONFIG:
-        MODELS_CONFIG = load_yaml("src/config/models.yaml")
-    return MODELS_CONFIG
-
-# Model Accessors
-def get_model_id(model_type="reasoning"):
-    return get_models_config().get("models", {}).get(model_type, "llama3")
-
-REASONING_MODEL_ID = get_model_id("reasoning")
-FAST_MODEL_ID = get_model_id("fast")
+# Model configuration from settings
+REASONING_MODEL_ID = settings.reasoning_model
+REASONING_MODEL_TEMP = settings.reasoning_temperature
+FAST_MODEL_ID = settings.fast_model
+FAST_MODEL_TEMP = settings.fast_temperature
 
 def get_provider():
-    return get_models_config().get("provider", "ollama")
+    return settings.llm_provider
 
 def get_base_url():
-    return get_models_config().get("base_url", "http://localhost:11434")
+    return settings.llm_base_url

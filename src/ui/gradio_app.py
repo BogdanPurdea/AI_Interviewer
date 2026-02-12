@@ -15,7 +15,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import gradio as gr
 from core.session import InterviewSession
-from core.config import RESPONSES
+from config.loader import RESPONSES
 
 # ============================================================================
 # SESSION STORAGE
