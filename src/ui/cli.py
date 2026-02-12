@@ -47,18 +47,17 @@ def main():
 
     try:
         user_input = console.input("\n[bold yellow]User:[/bold yellow] ")
-        # Initial user input processing (Handshake response)
-        # Note: Session expects next call to be process_user_input which triggers the first phase response
-        # We need to feed this handshake response in.
-
-        # However, sesssion.process_user_input immediately generates the NEXT AI question.
-        # So we pass the handshake answer, and get back the Phase 1 Question.
 
         while True:
             with console.status("[dim]Thinking...[/dim]"):
-                ai_response = session.process_user_input(user_input)
+                response = session.process_user_input(user_input)
 
-            console.print(f"\n[bold cyan]AI:[/bold cyan] {ai_response}")
+            # Extract message from SessionResponse
+            if response.success:
+                console.print(f"\n[bold cyan]AI:[/bold cyan] {response.message}")
+            else:
+                console.print(f"\n[bold red]Error:[/bold red] {response.error}")
+                break
 
             if not session.is_active:
                 break
@@ -76,7 +75,7 @@ def main():
     console.print("\n[bold magenta]Interview Complete![/bold magenta] Analyzing...")
     try:
         with console.status("[bold cyan]Generating Analysis...[/bold cyan]"):
-            filepath = session.end_session()
+            filepath, analysis = session.end_session()
         console.print(f"\n[dim]Interview saved to: {filepath}[/dim]")
     except Exception as e:
         console.print(f"[red]Error saving analysis:[/red] {e}")

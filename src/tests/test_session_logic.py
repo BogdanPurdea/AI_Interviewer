@@ -28,7 +28,7 @@ class TestSessionLogic(unittest.TestCase):
         self.session.interviewer.get_closing_message = MagicMock(return_value="Closing")
         # Default assessment to valid
         self.session.interviewer.assess_response = MagicMock(
-            return_value=MagicMock(relevant=5, cancel=False, reason="Good answer")
+            return_value=MagicMock(relevant=5, cancel=False, skip_question=False, reason="Good answer")
         )
         self.session.analyst.analyze_transcript = MagicMock()
 
@@ -43,16 +43,16 @@ class TestSessionLogic(unittest.TestCase):
         # Now test cancellation on second turn
         self.session.interviewer.assess_response = MagicMock(
             return_value=MagicMock(
-                relevant=1, cancel=True, reason="User requested cancellation"
+                relevant=1, cancel=True, skip_question=False, reason="User requested cancellation"
             )
         )
         response = self.session.process_user_input("stop")
-        self.assertEqual(response, "Closing")
+        self.assertEqual(response.message, "Closing")
         self.assertFalse(self.session.is_active)
 
     def test_valid_answer_increments_count(self):
         self.session.interviewer.assess_response = MagicMock(
-            return_value=MagicMock(relevant=5, cancel=False, reason="Good")
+            return_value=MagicMock(relevant=5, cancel=False, skip_question=False, reason="Good")
         )
         initial_count = self.session.state.questions_answered_count
         self.session.process_user_input("valid answer")
@@ -64,7 +64,7 @@ class TestSessionLogic(unittest.TestCase):
 
         # Now test low relevance on second turn
         self.session.interviewer.assess_response = MagicMock(
-            return_value=MagicMock(relevant=1, cancel=False, reason="Irrelevant")
+            return_value=MagicMock(relevant=1, cancel=False, skip_question=False, reason="Irrelevant")
         )
         initial_count = self.session.state.questions_answered_count
         response = self.session.process_user_input("invalid answer")
@@ -80,19 +80,19 @@ class TestSessionLogic(unittest.TestCase):
 
         # Now test cancellation via assessment
         self.session.interviewer.assess_response = MagicMock(
-            return_value=MagicMock(relevant=1, cancel=True, reason="User quit")
+            return_value=MagicMock(relevant=1, cancel=True, skip_question=False, reason="User quit")
         )
         response = self.session.process_user_input("stop")
-        self.assertEqual("Closing", response)
+        self.assertEqual("Closing", response.message)
         self.assertFalse(self.session.is_active)
 
     def test_max_questions_termination(self):
         self.session.state.questions_answered_count = 4
         self.session.interviewer.assess_response = MagicMock(
-            return_value=MagicMock(relevant=5, cancel=False, reason="Good")
+            return_value=MagicMock(relevant=5, cancel=False, skip_question=False, reason="Good")
         )  # 5th answer valid
         response = self.session.process_user_input("final answer")
-        self.assertEqual("Closing", response)  # Ensure we get the Closing message
+        self.assertEqual("Closing", response.message)  # Ensure we get the Closing message
         self.assertFalse(self.session.is_active)
         self.assertEqual(self.session.state.questions_answered_count, 5)
 
