@@ -10,7 +10,7 @@ __pycache__/
 .env
 
 # Project
-interviews/
+data/
 todo.txt
 
 # Gradio

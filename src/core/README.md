@@ -25,12 +25,28 @@ This directory contains the foundational logic, configuration, and data structur
   - Supports multiple providers (Ollama, AWS Bedrock)
   - Configurable via `models.yaml` and environment variables
 - **`StorageService`**: Handles saving interview transcripts and analysis to filesystem
+- **`HistoryService`**: Manages conversation history for LLM context
+  - In-memory storage (production would use Redis/Postgres)
+  - Session-based message tracking
+- **`PhaseManager`**: Centralized phase advancement logic
+  - Determines when to advance based on relevance thresholds
+  - Tracks current phase information
+- **`ResponseHandler`**: Handles response assessment and flow control
+  - Priority-based decision making (Cancel > Skip > Relevance)
+  - Manages question counting and phase progression
+  - Generates user-friendly feedback for low-relevance responses
+
+### Utilities (`src/core/utils/`)
+
+- **`transcript_utils`**: Helper functions for transcript manipulation
+  - `get_last_question()`: Extracts most recent AI question from transcript
 
 ### Session Management (`src/core/session.py`)
 
 - **`InterviewSession`**: Central orchestrator for interview lifecycle
   - Maintains `InterviewState` with phase tracking and question counts
-  - Manages state transitions: Planning → Interviewing → Analysis
+  - Delegates assessment handling to `ResponseHandler`
+  - Uses `PhaseManager` for phase progression logic
   - Handles user intents:
     - Skip questions (lenient detection)
     - Cancel interview
@@ -104,10 +120,11 @@ Uses **Pydantic** models for type safety and structured LLM outputs:
    - 1-2: Off-topic
 
 ### Phase Advancement
-- Advances when question count reaches threshold OR user skips
-- Relevance thresholds:
-  - Question level: 3/10
-  - Phase level: 4/10
+- Advances when relevance score meets phase threshold OR user skips
+- Default relevance thresholds (configurable):
+  - Question level: 4/10 (session default)
+  - Phase level: 6/10 (session default)
+  - Settings defaults: 2/10 (question), 3/10 (phase)
 
 ### Natural Feedback
 - For inadequate responses: "I'd like to hear more about that. [reason]"

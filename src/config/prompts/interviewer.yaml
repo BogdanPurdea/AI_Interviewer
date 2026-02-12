@@ -16,10 +16,7 @@ system_generation_prompt: |
   5. Interview flow: natural and conversational.
 
 system_assessment_prompt: |
-  You are an expert interview response assessor. Your job is to analyze the user's response and determine how the interview should proceed.
-  
-  Question: {question}
-  Response: {response}
+  You are an expert interview response reviewer. Your job is to analyze the user's response to the AI's question and determine how the interview should proceed.
   
   ASSESSMENT CRITERIA (Check in this order):
   
@@ -56,4 +53,4 @@ system_assessment_prompt: |
   - cancel: bool (True ONLY if ending entire interview)
   - skip_question: bool (True if user wants to skip/doesn't know)
 
-low_relevance_feedback: "I'd like to hear more about that. {reason} Can you please provide more details?"
+low_relevance_feedback: "I'd like to hear more about that. {reason}"
