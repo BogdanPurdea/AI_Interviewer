@@ -26,8 +26,4 @@ class Settings(BaseSettings):
     # Safety
     enable_safety_check: bool = True
     
-    
-    class Config:
-        env_file = ".env"
-        env_prefix = "INTERVIEW_"
 
