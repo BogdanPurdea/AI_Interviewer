@@ -115,8 +115,11 @@ def send_message(user_message: str, session_id: str, history: list):
             gr.Warning("Session not found. Please start a new interview.")
             return history, ""
         
-        # Add user message to history immediately for better UX
+        # Add user message to history immediately for instant feedback
         history.append({"role": "user", "content": user_message})
+        
+        # Yield to show user message immediately (Gradio will update UI)
+        yield history, ""
     
         # Get the session object
         session = sessions[session_id]
@@ -129,7 +132,8 @@ def send_message(user_message: str, session_id: str, history: list):
             gr.Warning(result.error)
             # Remove the user message we just added since there was an error
             history.pop()
-            return history, ""
+            yield history, ""
+            return
         
         # Add AI response to chat history
         # (User message already added above for immediate display)
@@ -165,12 +169,12 @@ def send_message(user_message: str, session_id: str, history: list):
             gr.Info("Interview completed and saved!")
         
         # Return updated history and empty string (clears input box)
-        return history, ""
+        yield history, ""
         
     except Exception as e:
         # Handle unexpected errors
         gr.Warning(f"Error: {str(e)}")
-        return history, ""
+        yield history, ""
 
 
 def cleanup_expired_sessions():
@@ -194,7 +198,7 @@ def cleanup_expired_sessions():
             del sessions[sid]
         
         if expired:
-            print(f"🧹 Cleaned up {len(expired)} expired session(s)")
+            print(f"Cleaned up {len(expired)} expired session(s)")
 
 
 # ============================================================================
@@ -280,8 +284,8 @@ with gr.Blocks(
     gr.Markdown(
         """
         **Tips:**
-        - You can skip questions you don't want to answer
-        - You can stop the interview at any time
+        - You can skip questions you don't want to answer through the chat interface
+        - You can stop the interview at any time through the chat interface
         - Interviews are automatically saved when completed
 
         **Created by:** Bogdan Purdea
@@ -294,7 +298,12 @@ with gr.Blocks(
     # These connect UI components to backend functions
     
     # When "Start Interview" button is clicked
+    # Clear chatbot first, then start interview
     start_btn.click(
+        fn=lambda: [],  # Clear chatbot
+        inputs=None,
+        outputs=chatbot
+    ).then(
         fn=start_interview,           # Function to call
         inputs=[topic_input],          # Pass topic text
         outputs=[                      # Update these components
@@ -305,7 +314,12 @@ with gr.Blocks(
     )
     
     # Start interview when Enter is pressed in topic input
+    # Clear chatbot first, then start interview
     topic_input.submit(
+        fn=lambda: [],  # Clear chatbot
+        inputs=None,
+        outputs=chatbot
+    ).then(
         fn=start_interview,
         inputs=[topic_input],
         outputs=[status_box, session_state, chatbot]

@@ -124,7 +124,6 @@ class InterviewSession:
     def _check_termination(self) -> Optional[SessionResponse]:
         """Check if interview should end due to question limit."""
         if self.state.questions_answered_count >= self.max_questions:
-            print(self.state.questions_answered_count)
             closing_msg = self.interviewer.get_closing_message()
             return self._build_response(closing_msg)
         return None

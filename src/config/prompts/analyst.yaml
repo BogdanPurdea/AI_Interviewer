@@ -13,6 +13,7 @@ analysis_prompt: |
   2. Key Points: List 3-5 main points the user discussed
   
   3. Sentiment Analysis: 
+     - Focus on user responses when analyzing sentiment
      - Provide a score from 1-5 (1=Very Negative, 5=Very Positive)
      - Provide a label (Very Negative, Negative, Neutral, Positive, Very Positive)
   
