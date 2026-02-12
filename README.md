@@ -1,9 +1,3 @@
----
-title: AI_Interviewer
-app_file: src/ui/gradio_app.py
-sdk: gradio
-sdk_version: 6.5.1
----
 # AI Interviewer
 
 An AI-powered application that conducts structured interviews on any topic using LLMs. Supports both web (Gradio) and CLI interfaces.
@@ -16,7 +10,8 @@ An AI-powered application that conducts structured interviews on any topic using
 - **Response Assessment**: Evaluates relevance (1-10 scale) and user intent
 - **Post-Interview Analysis**: Summary, sentiment, themes, and keywords
 - **Safety Checks**: Topic validation and input monitoring
-- **Multi-Provider**: Supports Ollama (local) and AWS Bedrock
+- **Multi-Provider**: Supports Ollama (local), OpenAI and Anthropic (cloud)
+
 
 ## Structure
 
@@ -33,6 +28,7 @@ src/
 │   └── cli.py         # CLI interface
 └── tests/           # Unit and integration tests
 ```
+
 
 ## Setup
 
@@ -93,3 +89,4 @@ src/
 ## License
 
 MIT License - Copyright (c) 2026 Bogdan Purdea
+
