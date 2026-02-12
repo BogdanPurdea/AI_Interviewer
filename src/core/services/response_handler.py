@@ -4,7 +4,7 @@ from typing import Optional
 from core.schemas import InterviewState, ResponseAssessment, SessionResponse
 from core.services.history import HistoryService
 from core.services.phase_manager import PhaseManager
-from core.config import PROMPTS
+from config.loader import PROMPTS
 
 
 class ResponseHandler:
@@ -69,6 +69,7 @@ class ResponseHandler:
     
     def _handle_skip(self, state: InterviewState) -> None:
         """Handle user skipping a question."""
+        state.questions_answered_count += 1
         PhaseManager.advance_phase(state)
     
     def _handle_valid_response(

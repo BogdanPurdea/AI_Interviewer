@@ -49,7 +49,7 @@ class InterviewSession:
         # Ensure fresh history
         HistoryService.clear_session_history(self.session_id)
 
-        # Safety Check (Topic)
+        # Safety Check for topic
         if "SAFE" not in self.safety.check_safety(topic).upper():
             raise ValueError(f"Safety violation: Topic '{topic}' is unsafe.")
 

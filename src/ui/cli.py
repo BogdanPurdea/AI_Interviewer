@@ -14,8 +14,8 @@ console = Console()
 def main():
     console.print(
         Panel(
-            "[bold magenta]AI Research Interviewer[/bold magenta]\n[dim]Powered by Ollama[/dim]",
-            subtitle="CLI Version 2.0 (Modular)",
+            "[bold magenta]AI Research Interviewer[/bold magenta]",
+            subtitle="CLI Interviewer",
         )
     )
 

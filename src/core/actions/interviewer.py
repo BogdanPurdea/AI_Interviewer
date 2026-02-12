@@ -1,7 +1,6 @@
-from langchain_core.prompts import ChatPromptTemplate
-from core.config import PROMPTS, RESPONSES
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from config.loader import PROMPTS, RESPONSES
 from core.services.llm_factory import LLMFactory
-from langchain_core.runnables.history import RunnableWithMessageHistory
 from core.services.history import HistoryService
 from core.schemas import ResponseAssessment
 
@@ -21,16 +20,12 @@ class InterviewerAction:
 
     def assess_response(self, user_input: str, question: str) -> ResponseAssessment:
         """Determines if the user's input adequately answers the question."""
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    PROMPTS["interviewer"]["system_assessment_prompt"],
-                ),
-            ]
-        )
-        chain = prompt | self.assessment_llm
-        return chain.invoke({"response": user_input, "question": question})
+        system_msg = SystemMessage(content=PROMPTS["interviewer"]["system_assessment_prompt"])
+        ai_msg = AIMessage(content=question)
+        human_msg = HumanMessage(content=user_input)
+        
+        messages = [system_msg, ai_msg, human_msg]
+        return self.assessment_llm.invoke(messages)
 
     def get_next_response(
         self,
@@ -51,24 +46,23 @@ class InterviewerAction:
             current_phase_objective=current_phase_objective,
         )
 
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", system_prompt),
-                ("placeholder", "{chat_history}"),
-                ("human", "{input}"),
-            ]
-        )
-
-        chain = prompt | self.llm
-
-        chain_with_history = RunnableWithMessageHistory(
-            chain,
-            HistoryService.get_session_history,
-            input_messages_key="input",
-            history_messages_key="chat_history",
-        )
-
-        response = chain_with_history.invoke(
-            {"input": user_input}, config={"configurable": {"session_id": session_id}}
-        )
+        # Get chat history
+        history = HistoryService.get_session_history(session_id)
+        
+        # Build messages list
+        messages = [SystemMessage(content=system_prompt)]
+        
+        # Add chat history messages
+        messages.extend(history.messages)
+        
+        # Add current user input
+        messages.append(HumanMessage(content=user_input))
+        
+        # Invoke model
+        response = self.llm.invoke(messages)
+        
+        # Save to history
+        history.add_user_message(user_input)
+        history.add_ai_message(response.content)
+        
         return response.content
