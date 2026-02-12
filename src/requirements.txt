@@ -1,6 +1,10 @@
 langchain-ollama
+langchain-openai
+langchain-anthropic
 pydantic
 rich
 pyyaml
 python-dotenv
 langchain-community
+gradio
+pydantic-settings

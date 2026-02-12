@@ -13,11 +13,15 @@ authors = [
 ]
 dependencies = [
     "langchain-ollama",
+    "langchain-openai",
+    "langchain-anthropic",
     "pydantic",
     "rich",
     "pyyaml",
     "python-dotenv",
-    "langchain-community"
+    "langchain-community",
+    "gradio",
+    "pydantic-settings"
 ]
 
 [tool.setuptools.packages.find]
