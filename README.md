@@ -1,8 +1,14 @@
+---
+title: AI_Interviewer
+app_file: src/ui/gradio_app.py
+sdk: gradio
+sdk_version: 6.5.1
+---
 # AI Interviewer
 
 A modular, AI-powered interviewing application that conducts structured, dynamic interviews on any topic through an intuitive web interface.
 
-## 🚀 Key Features
+## Key Features
 
 - **Web-Based Interface**: Clean, modern Gradio UI for seamless interview experience
 - **Dynamic Interview Planning**: Automatically generates custom interview plans (3-5 phases) based on your topic
@@ -20,7 +26,7 @@ A modular, AI-powered interviewing application that conducts structured, dynamic
 - **Safety First**: Pre-interview topic safety checks and real-time input monitoring
 - **Provider Agnostic**: Configurable to use different LLM providers (optimized for **Ollama** and **AWS Bedrock**)
 
-## 🛠️ Architecture
+## Architecture
 
 The project follows a clean, modular architecture:
 
@@ -43,7 +49,7 @@ src/
     └── test_session_logic.py  # Test suite
 ```
 
-## 📋 Prerequisites
+## Prerequisites
 
 - **Python 3.10+**
 - **LLM Provider** (choose one):
@@ -53,7 +59,7 @@ src/
     ```
   - **AWS Bedrock**: AWS credentials configured with access to Claude models
 
-## ⚡ Quick Start
+## Quick Start
 
 1. **Clone the repository**:
    ```bash
@@ -90,7 +96,7 @@ src/
    python src/tests/test_session_logic.py
    ```
 
-## ⚙️ Configuration
+## Configuration
 
 ### LLM Models (`src/config/models.yaml`)
 
@@ -113,7 +119,7 @@ All system prompts are centralized in YAML files:
 
 Customize user-facing messages like opening, closing, and analysis display.
 
-## 🧠 Core Components
+## Core Components
 
 ### Actions
 - **SafetyAction**: Filters unsafe topics before interview starts
@@ -133,7 +139,7 @@ Evaluates user responses on multiple criteria:
 2. **Skip Detection** - User wants to move to next question (lenient)
 3. **Relevance Scoring** - 1-10 scale based on answer quality
 
-## 📊 Interview Flow
+## Interview Flow
 
 1. **Start**: User enters a topic
 2. **Safety Check**: Topic is validated for appropriateness
@@ -145,7 +151,7 @@ Evaluates user responses on multiple criteria:
 5. **Analysis**: Automatic analysis with summary, sentiment, themes, and keywords
 6. **Save**: Transcript and analysis saved to `data/interviews/`
 
-## 🎨 Web Interface Features
+## Web Interface Features
 
 - **Clean, Modern Design**: Intuitive chat-based interface
 - **Real-time Feedback**: Messages appear instantly
@@ -153,14 +159,14 @@ Evaluates user responses on multiple criteria:
 - **Session Management**: Automatic cleanup of inactive sessions
 - **Status Notifications**: Clear success/error messages
 
-## 📁 Output
+## Output
 
 Interviews are saved in `data/interviews/` with:
 - Timestamp-based filenames
 - Full conversation transcript
 - Comprehensive analysis (JSON format)
 
-## 🔧 Development
+## Development
 
 ### Project Structure
 - Modular design with clear separation of concerns
@@ -174,10 +180,8 @@ Interviews are saved in `data/interviews/` with:
 3. Update actions in `src/core/actions/`
 4. Test with `src/tests/test_session_logic.py`
 
-## 📝 License
+## License
 
-[Add your license here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🤝 Contributing
-
-[Add contribution guidelines here]
+Copyright (c) 2026 Bogdan Purdea
