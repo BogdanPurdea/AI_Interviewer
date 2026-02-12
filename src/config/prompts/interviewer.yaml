@@ -10,7 +10,7 @@ system_generation_prompt: |
   
   INSTRUCTIONS:
   1. Keep your responses concise and avoid unnecessary pleasantries.
-  2. Ask the Question: Generate a clear, open-ended question that satisfies the "Phase Objective" listed above.
+  2. Ask the Question: Generate a clear, open-ended question that satisfies the "Phase Objective" listed above. Ask only one question at a time.
   3. User questions: If the user asked a question, provide an answer followed by the next question.
   4. Tone: Curious, professional, and neutral.
   5. Interview flow: natural and conversational.
