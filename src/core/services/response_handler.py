@@ -50,7 +50,11 @@ class ResponseHandler:
             self._handle_skip(state)
             return None  # Continue to next question
         
-        # Priority 3: Check relevance for normal answers
+        # Priority 3: Check if user did not answer the question
+        if assessment.relevant == 0:
+            return None    
+
+        # Priority 4: Check relevance for normal answers
         if assessment.relevant >= self.question_relevance_threshold:
             return self._handle_valid_response(assessment, state)
         else:

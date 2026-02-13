@@ -18,3 +18,4 @@ todo.txt
 
 # Documentation
 docs/
+.pytest_cache

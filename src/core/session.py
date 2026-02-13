@@ -105,11 +105,6 @@ class InterviewSession:
         if not last_question:
             return None
 
-        # Skip assessment for the very first turn (opening handshake)
-        if self.state.questions_answered_count == 0:
-            self.state.questions_answered_count += 1
-            return None
-
         # Assess the response
         assessment = self.interviewer.assess_response(user_input, last_question)
         
