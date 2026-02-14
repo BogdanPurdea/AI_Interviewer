@@ -375,6 +375,6 @@ if __name__ == "__main__":
     app.launch(
         server_name="0.0.0.0",  # Listen on all network interfaces
         server_port=7860,        # Default Gradio port
-        share=False,             # Set to True for public URL
+        share=True,             # Set to True for public URL
         show_error=True,         # Show detailed errors in UI
     )
