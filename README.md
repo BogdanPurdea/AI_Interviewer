@@ -37,17 +37,21 @@ The application follows a **Modular Action Pattern**, where specialized "agents"
 ## Structure
 
 ```
-src/
-├── config/          # Prompts, settings, model config
-├── core/
-│   ├── actions/     # Safety, Planner, Interviewer, Analyst
-│   ├── schemas/     # Pydantic models
-│   ├── services/    # LLM factory, storage, phase management
-│   └── session.py   # Session orchestration
-├── ui/
-│   ├── gradio_app.py  # Web interface
-│   └── cli.py         # CLI interface
-└── tests/           # Unit and integration tests
+.
+├── src/
+│   ├── config/          # Prompts, settings, model config
+│   ├── core/
+│   │   ├── actions/     # Safety, Planner, Interviewer, Analyst
+│   │   ├── schemas/     # Pydantic models
+│   │   ├── services/    # LLM factory, storage, phase management
+│   │   └── session.py   # Session orchestration
+│   └── tests/           # Unit and integration tests
+├── ui/                  # User Interfaces (moved from src/ui)
+│   ├── gradio_app.py    # Web interface
+│   └── cli.py           # CLI interface
+├── data/                # Interview transcripts and analysis
+├── docs/                # Documentation
+└── README.md            # Project documentation
 ```
 
 ## Setup
@@ -75,10 +79,10 @@ src/
 3. **Run**:
    ```bash
    # Web interface
-   python src/ui/gradio_app.py  # http://localhost:7860
+   python ui/gradio_app.py # http://localhost:7860
    
    # CLI interface
-   python src/ui/cli.py
+   python ui/cli.py
    ```
 
 4. **Test**:
