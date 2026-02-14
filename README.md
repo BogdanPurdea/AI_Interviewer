@@ -9,7 +9,7 @@ An AI-powered application that conducts structured interviews on any topic using
 - **Flexible Flow**: Skip questions, ask for clarification, or end early
 - **Response Assessment**: Evaluates relevance (1-10 scale) and user intent
 - **Post-Interview Analysis**: Summary, sentiment, themes, and keywords
-- **Safety Checks**: Topic validation and input monitoring
+- **Safety Topic Check**: Topic safety restriction
 - **Multi-Provider**: Supports Ollama (local), OpenAI and Anthropic (cloud)
 
 
