@@ -12,6 +12,27 @@ An AI-powered application that conducts structured interviews on any topic using
 - **Safety Topic Check**: Topic safety restriction
 - **Multi-Provider**: Supports Ollama (local), OpenAI and Anthropic (cloud)
 
+## Architecture & Design
+
+The application follows a **Modular Action Pattern**, where specialized "agents" handle distinct parts of the interview lifecycle:
+
+1.  **Planner Action**:
+    -   Analyzes the user's topic.
+    -   Generates a structured plan with 3-5 sequential phases (e.g., Introduction, Deep Dive, Conclusion).
+    -   Sets a clear goal for the interview.
+
+2.  **Interviewer Action**:
+    -   Generates context-aware questions based on the current phase.
+    -   Assesses user responses for relevance before proceeding.
+    -   Maintains conversation flow and handles topic adherence.
+
+3.  **Analyst Action**:
+    -   Runs after the interview concludes.
+    -   Processes the entire transcript to extract insights (sentiment, keywords, themes).
+
+4.  **Session Manager**:
+    -   Orchestrates the interaction between the user, UI, and Actions.
+    -   Manages state (current phase, question count, history).
 
 ## Structure
 
@@ -28,7 +49,6 @@ src/
 │   └── cli.py         # CLI interface
 └── tests/           # Unit and integration tests
 ```
-
 
 ## Setup
 
@@ -68,25 +88,33 @@ src/
 
 ## Configuration
 
-- **Models** (`src/config/models.yaml`): LLM provider and model selection
-- **Prompts** (`src/config/prompts/`): System prompts for planner, interviewer, analyst
-- **Settings** (`src/config/settings.py`): Thresholds, limits, timeouts
+- **Models** (`src/config/models.yaml`): Switch between providers and specific models.
+- **Prompts** (`src/config/prompts/`): distinct YAML files for `planner`, `interviewer`, and `analyst` allow you to customize the AI's persona and instructions without changing code.
+- **Settings** (`src/config/settings.py`): Adjust operational parameters like:
+    - `max_questions`: Length of interview.
+    - `question_relevance_threshold`: How strict the assessment is.
 
 ## Interview Flow
 
-1. Enter topic → Safety check
-2. Generate interview plan (3-5 phases)
-3. Conduct interview with dynamic questions
-4. Analyze transcript
-5. Save to `data/interviews/`
+1.  **Initialization**: User enters a topic.
+2.  **Planning**: System validates safety and generates a multi-phase plan.
+3.  **The Loop**:
+    -   AI asks a question for the current phase.
+    -   User answers.
+    -   **Assessment**: AI evaluates if the answer is relevant.
+        -   *Relevant*: Move to next question/phase.
+        -   *Irrelevant/Too Short*: Ask follow-up or guide user back.
+        -   *User Question/Demand*: Addressed directly by the interviewer.
+4.  **Completion**: Reached max questions or natural conclusion.
+5.  **Analysis**: AI generates a summary report and saves to JSON.
 
 ## Output
 
-- Timestamp-based filenames
-- Full transcript
-- Analysis (JSON): summary, sentiment, themes, keywords
+- **Location**: `data/interviews/`
+- **Format**: JSON file containing:
+    -   Full conversation transcript
+    -   Structured analysis (Summary, Sentiment Score, Keywords, Themes)
 
 ## License
 
 MIT License - Copyright (c) 2026 Bogdan Purdea
-
