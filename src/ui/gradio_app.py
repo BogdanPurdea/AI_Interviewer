@@ -109,17 +109,17 @@ def send_message(user_message: str, session_id: str, history: list):
     try:
         # Ignore empty messages
         if not user_message or not user_message.strip():
-            return history, ""  # Ignore empty messages
+            return history, "", gr.File(visible=False)  # Ignore empty messages
         
         if not session_id or session_id not in sessions:
             gr.Warning("Session not found. Please start a new interview.")
-            return history, ""
+            return history, "", gr.File(visible=False)
         
         # Add user message to history immediately for instant feedback
         history.append({"role": "user", "content": user_message})
         
         # Yield to show user message immediately (Gradio will update UI)
-        yield history, ""
+        yield history, "", gr.File(visible=False)
     
         # Get the session object
         session = sessions[session_id]
@@ -132,7 +132,7 @@ def send_message(user_message: str, session_id: str, history: list):
             gr.Warning(result.error)
             # Remove the user message we just added since there was an error
             history.pop()
-            yield history, ""
+            yield history, "", gr.File(visible=False)
             return
         
         # Add AI response to chat history
@@ -167,14 +167,18 @@ def send_message(user_message: str, session_id: str, history: list):
             
             # Show success notification
             gr.Info("Interview completed and saved!")
+            
+            # Return updated history, empty string, and visible file download
+            yield history, "", gr.File(value=filepath, visible=True)
+            return
         
         # Return updated history and empty string (clears input box)
-        yield history, ""
+        yield history, "", gr.File(visible=False)
         
     except Exception as e:
         # Handle unexpected errors
         gr.Warning(f"Error: {str(e)}")
-        yield history, ""
+        yield history, "", gr.File(visible=False)
 
 
 def cleanup_expired_sessions():
@@ -264,6 +268,13 @@ with gr.Blocks(
         height=500,
     )
     
+    # Download button (initially hidden)
+    analysis_download = gr.File(
+        label="Download Analysis JSON",
+        visible=False,
+        interactive=False
+    )
+    
     # Message input area
     with gr.Row():
         msg_input = gr.Textbox(
@@ -300,9 +311,9 @@ with gr.Blocks(
     # When "Start Interview" button is clicked
     # Clear chatbot first, then start interview
     start_btn.click(
-        fn=lambda: [],  # Clear chatbot
+        fn=lambda: ([], gr.File(visible=False)),  # Clear chatbot and hide download
         inputs=None,
-        outputs=chatbot
+        outputs=[chatbot, analysis_download]
     ).then(
         fn=start_interview,           # Function to call
         inputs=[topic_input],          # Pass topic text
@@ -316,9 +327,9 @@ with gr.Blocks(
     # Start interview when Enter is pressed in topic input
     # Clear chatbot first, then start interview
     topic_input.submit(
-        fn=lambda: [],  # Clear chatbot
+        fn=lambda: ([], gr.File(visible=False)),  # Clear chatbot and hide download
         inputs=None,
-        outputs=chatbot
+        outputs=[chatbot, analysis_download]
     ).then(
         fn=start_interview,
         inputs=[topic_input],
@@ -335,7 +346,8 @@ with gr.Blocks(
         ],
         outputs=[                      # Update these components
             chatbot,                   # Updated chat history
-            msg_input                  # Clear the input (empty string)
+            msg_input,                 # Clear the input (empty string)
+            analysis_download          # Show/Hide download button
         ]
     )
     
@@ -343,7 +355,7 @@ with gr.Blocks(
     msg_input.submit(
         fn=send_message,
         inputs=[msg_input, session_state, chatbot],
-        outputs=[chatbot, msg_input]
+        outputs=[chatbot, msg_input, analysis_download]
     )
 
 
