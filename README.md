@@ -2,6 +2,12 @@
 
 An AI-powered application that conducts structured interviews on any topic using LLMs. Supports both web (Gradio) and CLI interfaces.
 
+## Live Demo
+
+**Note**: The app is accessible via a Gradio public share link. These links are **temporary and expire after 1 week** — the previous link expired on **2026-02-21**.
+
+**[Updated link (available until 2026-02-28)](https://053b752c5db39a0d55.gradio.live)**
+
 ## Features
 
 - **Dual Interfaces**: Web UI (Gradio) or terminal CLI
