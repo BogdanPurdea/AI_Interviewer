@@ -6,7 +6,7 @@ An AI-powered application that conducts structured interviews on any topic using
 
 **Note**: The app is accessible via a Gradio public share link. These links are **temporary and expire after 1 week** — the previous link expired on **2026-02-21**.
 
-**[Updated link (available until 2026-02-28)](https://053b752c5db39a0d55.gradio.live)**
+**[Updated link (available until 2026-02-28)](https://7be2f62e6d2b9aaf3c.gradio.live)**
 
 ## Features
 
